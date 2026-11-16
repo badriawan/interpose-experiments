@@ -1,0 +1,15 @@
+{
+  "example_only": "Own synthetic values; merge instruction and goal into a trusted scene JSON, adjusting center/object to its matching initial NPY.",
+  "custom_instruction": "Lift the synthetic box by 0.2 meters, hold it for 5 seconds, return it to the initial position, then release it.",
+  "custom_goal": {
+    "action": "lift_hold_return_release",
+    "object": "synthetic_box",
+    "center_xyz_m": [0.4, 0.0, 0.5],
+    "lift_height_m": 0.2,
+    "hold_duration_s": 5.0,
+    "release_after_placement": true,
+    "settle_duration_s": 1.0,
+    "hand_withdraw_duration_s": 1.0,
+    "hand_withdraw_distance_m": 0.1
+  }
+}

@@ -1,0 +1,5 @@
+# Optional preview generation on Python 3.8; observed versions, CPU only.
+-r requirements-offline.txt
+matplotlib==3.7.5
+imageio==2.19.3
+imageio-ffmpeg==0.4.7

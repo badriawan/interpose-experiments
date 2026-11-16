@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "paths": {
+    "interpose_root": "/path/to/InterPose",
+    "protomotions_root": "/path/to/ProtoMotion_for_InterPose",
+    "interpose_python": "/path/to/interpose-env/bin/python",
+    "simulator_python": "/path/to/simulator-env/bin/python",
+    "smplsim_root": "/path/to/SMPLSim",
+    "isaacgym_python_root": "/path/to/isaacgym/python",
+    "smplx_root": "/path/to/licensed/smplx",
+    "checkpoint": "/path/to/last.ckpt",
+    "data_root": "/path/to/prepared/frl_apartment_4",
+    "key_file": "~/.config/interpose/openai_api_key"
+  },
+  "api": {"model": "gpt-4o"}
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "root": "interpose_root",
+      "path": "HOI_agent/utils/output_schema.py",
+      "sha256": "0e477636d5e9cc62b9f91a4d92aca5d6a8899f60b2ba1af948d54a68a6d8e685"
+    },
+    {
+      "root": "interpose_root",
+      "path": "HOI_agent/prompt/single_agent_prompt.py",
+      "sha256": "a6c00d618ec680ec385073cf663f324822a029a9dfbc58374d1610ab23ccefbe"
+    },
+    {
+      "root": "interpose_root",
+      "path": "HOI_agent/protomotios_generate_multi_object.py",
+      "sha256": "00076368167b2d34a5e914b6e8bd39839b90e5a9811c8e7b5cab99e4c830a12c"
+    },
+    {
+      "root": "interpose_root",
+      "path": "run_HOI_agent.py",
+      "sha256": "8bdceede123a19f8e2c86bf069838545b05c18ea4119f1556724e657ff522f9c"
+    },
+    {
+      "root": "interpose_root",
+      "path": "utils/process_mesh_files.py",
+      "sha256": "6215fa058bff2c7b47230e38e2e516cd4c26a4e0a5096b0c64d58669a5991660"
+    },
+    {
+      "root": "interpose_root",
+      "path": "manip/lafan1/utils.py",
+      "sha256": "65c636b243e889abdc6b2060030afc82975f1795e3d04446393c66aa89b5e1e2"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/simulator/isaacgym/__init__.py",
+      "sha256": "98eaf863c44a51ed31bb986c20db7b3ccef0d42e7505132fad0680fd86021fc5"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/simulator/isaacgym/config.py",
+      "sha256": "593a5b1e9317df98a909bf824c3a1e4afab1a347ec198d26a2ddeeac0efb179b"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/simulator/isaacgym/simulator.py",
+      "sha256": "fc347cee02de65b2fcd03b037c35c76323b2c0c7b8a6688b53b24c60359526c2"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/simulator/isaacgym/PROVENANCE.md",
+      "sha256": "19d46c26984c5c0b211056839caf4d7cef023ece8d1acc8e43d13dd5a0332859"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/eval_agent.py",
+      "sha256": "192a9cd01c025a9077de7cc63a9ab54518f1078d180e29dc17c37afc11b1eb24"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "data/scripts/convert_amass_to_isaac.py",
+      "sha256": "c05260d8121c68830321063ce1dff5008676303744ad497256060f0584714777"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/envs/base_env/env.py",
+      "sha256": "8376e2b1019dc211c634ff3aa1c3d3efed7542607bdf647d038cbcc5faecb763"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/envs/mimic/env.py",
+      "sha256": "d04aee60fadbadf9cb58fac0744c70603703f6adb3a2df5441eb8d1bb5c50b37"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/agents/ppo/agent.py",
+      "sha256": "e0e523b476e60256dc530b79a7e06c22f3d0e7e6cd2fdc2e2a774f3d1f286a5b"
+    },
+    {
+      "root": "protomotions_root",
+      "path": "protomotions/agents/masked_mimic/model.py",
+      "sha256": "e2801f94457b1bf0f76ada653bff3fba4db5cda5a0eed85515482c89325e7653"
+    },
+    {
+      "root": "checkpoint",
+      "path": ".",
+      "sha256": "a35840b84f3dcb67657487579c913df98a0c3bb0867c9d1f6fe3daddffdbc068"
+    },
+    {
+      "root": "checkpoint_config",
+      "path": ".",
+      "sha256": "6dc3e00fa23450c7dd0134573adc53c77d77a9067c9f56843ff39a80b7344db5"
+    }
+  ]
+}

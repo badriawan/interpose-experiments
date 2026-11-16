@@ -1,0 +1,2 @@
+# CPU demo, Python 3.8–3.11. Full GPU environments are separate.
+numpy==1.24.3

@@ -1,0 +1,316 @@
+diff --git a/HOI_agent/prompt/single_agent_prompt.py b/HOI_agent/prompt/single_agent_prompt.py
+index 9beb20e..12a13be 100644
+--- a/HOI_agent/prompt/single_agent_prompt.py
++++ b/HOI_agent/prompt/single_agent_prompt.py
+@@ -156,7 +156,7 @@ object_points = [
+         [80, 3.55, -1.65, 0.148],
+     ]
+ ]
+-model.generate_human_object(control_joints, control_points, text, number_frames, task_index, object_name, object_points) 
++generate_interaction(control_joints, control_points, text, number_frames, task_index, object_name, object_points) 
+ ``` 
+ 
+ Examples2: 2 objects interaction at the same time
+@@ -174,7 +174,7 @@ text = (
+ )
+ number_frames = 80
+ task_index = 1
+-object_name = ["trashcan", "smallbox]
++object_name = ["trashcan", "smallbox"]
+ object_points = [
+     [   # Trashcan keypoints: moves with the human after grasped
+         [40, 2.899, -1.069, 0.148],     # Pickup (grasped at this frame)
+@@ -185,7 +185,7 @@ object_points = [
+         [80, 3.65, -1.95, 0.148],
+     ]
+ ]
+-model.generate_human_object(control_joints, control_points, text, number_frames, task_index, object_name, object_points) 
++generate_interaction(control_joints, control_points, text, number_frames, task_index, object_name, object_points) 
+ ``` 
+ 
+ **Ensure proper indentation and include `\\n` for line breaks**.
+@@ -210,4 +210,15 @@ The human position and orientation state is:
+ The position, orientation and size of all objects in the environment are as follows:
+ <CURRENT ENVIRONMENT STATE>:
+ "[STATE]"
+-"""
+\ No newline at end of file
++"""
++
++# Stage8: align the existing planner protocol with executor guards.
++TASK_PROMPT += """
++EXECUTOR COMPATIBILITY REQUIREMENTS:
++- generate_motion without objects rejects number_frames <= 30 and pelvis endpoint displacement < 1 meter. If already within 1 meter of the pickup object, SKIP the separate short approach and combine approach, pickup, carry and placement using generate_interaction. Do not invent a longer detour solely to satisfy this guard.
++- For this first scene the pickup object is already within reach. Plan the original pickup-and-place interaction, not a separate short walk.
++- generate_interaction uses the registered name generate_interaction (never model.generate_human_object). Object names must exactly match scene names.
++- Output a single python fenced block containing only assignments of literal values to the documented parameter names and one registered function call. No imports, attribute access, helper calls, loops or arithmetic code. Compute numeric values while planning, then output literal values.
++- task_index starts at 1 and advances only after a successful generated motion. Keep number_frames > 30 and at most 900 for this bounded demonstration.
++- task_completed is a termination request, not proof of physical success. Only claim success using the executor feedback.
++"""
+diff --git a/HOI_agent/protomotios_generate_multi_object.py b/HOI_agent/protomotios_generate_multi_object.py
+index ca2f7c5..19bcd21 100644
+--- a/HOI_agent/protomotios_generate_multi_object.py
++++ b/HOI_agent/protomotios_generate_multi_object.py
+@@ -133,8 +133,8 @@ class protomotion_model:
+                                                                 1.5601856 ]])
+         
+         self.save_motion_folder = os.path.join(self.save_motion_root, f"{self.scene_name}_{self.seq_name}_{p_idx}")
+-        if os.path.exists(self.save_motion_folder):
+-            shutil.rmtree(self.save_motion_folder)  
++        if os.path.exists(self.save_motion_folder) and os.environ.get('STAGE8_RESUME') != '1':
++            raise FileExistsError('Refusing to overwrite an existing Stage8 episode directory')
+ 
+         os.makedirs(self.save_motion_folder, exist_ok=True)  
+ 
+@@ -1247,8 +1247,8 @@ class protomotion_model:
+ 
+         # retarget npz file and run maskedmimic
+         print(f"bash scripts/run_maskedmimic.sh {self.model_path} {control_setting} {input_folder} {input_smpl_path} {input_control_path} {output_path}")
+-        subprocess.call(f"bash scripts/run_maskedmimic.sh {self.model_path} {control_setting} {input_folder} {input_smpl_path} {input_control_path} {output_path}", 
+-                        shell=True, cwd='third-party/ProtoMotion_for_InterPose',stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL) 
++        from stage10_simulator_bridge import run_maskedmimic
++        run_maskedmimic(self.model_path, control_setting, input_folder, input_smpl_path, input_control_path, output_path)
+ 
+         # load output
+         maskedmimic_output_file = os.path.join(os.path.join(self.maskedmimic_res_folder, f"task_{task_index}"), "trajectory_pose_aa_0_0.npz")
+@@ -1312,9 +1312,9 @@ class protomotion_model:
+         cur_joint_point[:,1:] = cur_joint_point[:,1:] - trans2joint_list[:, :]
+         cur_joint_point = cur_joint_point.reshape(1, -1, 4)
+ 
+-        # save the motion data (human: joint_xyz, rotation, humanml3d; object: xyz, rotation)
+-        np.save(os.path.join(self.save_motion_folder, self.seq_name+"_pidx_"+str(self.p_idx)+"_task_"+str(task_index)+".npy"), 
+-        {
++        # Versioned output: dense trajectories unchanged; actual/planned annotations explicit.
++        from HOI_agent.utils.output_schema import build_metadata, finalize_motion_dict
++        motion_data = {
+             "human": {
+                 "joint_xyz": np.concatenate([init_position[:,:-last_k_frame+1,:24], final_sample], axis=1), # z-up
+                 "orientation": np.concatenate([init_rotation[:,:-last_k_frame+1], root_quat], axis=1), # z-up
+@@ -1322,14 +1322,52 @@ class protomotion_model:
+                 "pose_aa": np.concatenate([pose_aa[:,:-last_k_frame+1], maskedmimic_rot_aa], axis=1)  # z-up
+             },
+                 "object": all_object_data
++        }
++        previous_data = None
++        if task_index > 0:
++            previous_path = os.path.join(self.save_motion_folder, self.seq_name+"_pidx_"+str(self.p_idx)+"_task_"+str(task_index-1)+".npy")
++            previous_data = np.load(previous_path, allow_pickle=True).item()
++        old_group_count = prev_joint_point.shape[1]
++        prior_groups = []
++        if previous_data is not None:
++            prior_groups = previous_data.get('metadata', {}).get('joint_point_groups', [])
++            if old_group_count and not prior_groups:
++                prior_groups = [{'row_start': 0, 'row_stop': int(old_group_count), 'joint_name': 'unknown_legacy'}]
++        groups = list(prior_groups)
++        row_start = int(old_group_count)
++        for joint_name, points_for_joint in zip(control_joints, new_control_points):
++            row_stop = row_start + len(points_for_joint)
++            groups.append({'row_start': row_start, 'row_stop': row_stop, 'control_joint_label': joint_name,
++                           'position_joint_slot': joint_map[joint_name], 'task_index_zero_based': int(task_index)})
++            row_start = row_stop
++        metadata = build_metadata(30.0, self.gender, self.betas[0], extra={
++            'scene_name': self.scene_name, 'sequence_name': self.seq_name, 'sequence_pidx': str(self.p_idx),
++            'task_index_zero_based': int(task_index), 'joint_point_groups': groups,
++            'fps_evidence': 'same executor writes template mocap_framerate=30 before simulation',
+         })
++        # Stage10 observation: measured child clocks are distinct from planned object time.
++        with open(os.path.join(output_path, 'execution_evidence.json')) as clock_file:
++            clock_evidence = json.load(clock_file)
++        metadata['custom_goal'] = state.get('custom_goal')
++        metadata['custom_instruction'] = state.get('custom_instruction')
++        metadata['runtime_clock_observation'] = {
++            'clock_validation': clock_evidence.get('clock_validation'),
++            'recorder_clocks': clock_evidence.get('clock_records', []),
++            'reset_clocks': clock_evidence.get('reset_clocks', []),
++            'human_clock_measured': True,
++            'object_clock_measured': False,
++            'object_clock_definition': 'interpolated frame_index / 30; not physical object simulation time',
++            'current_segment_frames_used': int(final_sample.shape[1]),
++        }
++        motion_data = finalize_motion_dict(motion_data, metadata, previous_data=previous_data)
++        np.save(os.path.join(self.save_motion_folder, self.seq_name+"_pidx_"+str(self.p_idx)+"_task_"+str(task_index)+".npy"), motion_data)
+ 
+         # get pelvis, head, left hand, right hand, left foot, right foot
+         init_pelvis_pos = final_sample[0,-1,0]
+         init_left_hand_pos = final_sample[0,-1,22]
+         init_right_hand_pos = final_sample[0,-1,23]
+ 
+-        init_human_mat = transforms.quaternion_to_matrix(torch.from_numpy(root_quat[0,0,0]))
++        init_human_mat = transforms.quaternion_to_matrix(torch.from_numpy(root_quat[0,-1,0]))
+         init_human_rot_euler = transforms.matrix_to_euler_angles(init_human_mat, "XYZ").numpy()
+ 
+         state['human'] = {
+diff --git a/HOI_agent/utils/output_schema.py b/HOI_agent/utils/output_schema.py
+new file mode 100644
+index 0000000..87ff97c
+--- /dev/null
++++ b/HOI_agent/utils/output_schema.py
+@@ -0,0 +1,139 @@
++"""Versioned annotation/metadata writer; dense trajectories are never retimed here.
++
++NumPy/SciPy only: importing this module does not construct an executor or GPU model.
++"""
++import copy
++import numpy as np
++from scipy.spatial.transform import Rotation
++
++SCHEMA_VERSION = 'interpose-hoi-project/1.1'
++POSITION_JOINT_NAMES = [
++    'pelvis', 'left_hip', 'right_hip', 'spine1', 'left_knee', 'right_knee',
++    'spine2', 'left_ankle', 'right_ankle', 'spine3', 'left_foot', 'right_foot',
++    'neck', 'left_collar', 'right_collar', 'head', 'left_shoulder', 'right_shoulder',
++    'left_elbow', 'right_elbow', 'left_wrist', 'right_wrist',
++    'left_middle1', 'right_middle1',
++]
++POSITION_PARENTS = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 20, 21]
++
++
++def build_metadata(fps, gender, betas, extra=None):
++    """Describe the executed SMPL-X reconstruction; do not claim phase alignment."""
++    fps = float(fps)
++    shape = np.asarray(betas)
++    if not np.isfinite(fps) or fps <= 0:
++        raise ValueError('FPS must be finite and positive')
++    if shape.size != 16 or not np.isfinite(shape).all():
++        raise ValueError('SMPL-X reconstruction requires 16 finite betas')
++    metadata = {
++        'schema_version': SCHEMA_VERSION,
++        'fps': fps, 'dt_s': 1.0 / fps,
++        'fps_provenance': 'explicit caller FPS; executor writer uses its template mocap_framerate=30; simulator dt must be checked separately',
++        'body_model': 'SMPL-X', 'body_model_release': 'v1.1',
++        'gender': str(gender), 'betas16': shape.reshape(-1).tolist(),
++        'position_units': 'meter', 'axis_angle_units': 'radian',
++        'coordinate_frame': 'original scene-normalized Z-up; nominal floor z=0',
++        'quaternion_order': 'wxyz',
++        'position_joint_names': list(POSITION_JOINT_NAMES),
++        'position_model_joint_indices': list(range(22)) + [28, 43],
++        'position_joint_parent_indices': list(POSITION_PARENTS),
++        'pose_joint_names': list(POSITION_JOINT_NAMES[:22]),
++        'pose_joint_parent_indices': list(POSITION_PARENTS[:22]),
++        'pose_rotation_frames': 'root global scene orientation; joints1..21 parent-local',
++        'joint_point_columns': ['frame_id', 'x', 'y', 'z'],
++        'joint_point_semantics': 'desired control annotations; joint group identity is per-generation, not encoded in each legacy row',
++        'object_point_semantics': 'actual object xyz sampled at the saved integer frame IDs',
++        'planned_object_point_semantics': 'retimed planner/control annotations before final object-height adjustment',
++        'timeline_shift_applied': False,
++        'phase_sync_verified': False,
++        'timing_convention': 'legacy same-index pairing: human recorded after env_step, object interpolation starts at t0; no per-frame timestamps verified by this writer',
++        'physical_success_verified': False,
++        'resmimic_compatibility_verified': False,
++    }
++    if extra:
++        reserved = set(metadata).intersection(extra)
++        if reserved:
++            raise ValueError('Extra metadata cannot override reserved schema fields: ' + ', '.join(sorted(reserved)))
++        metadata.update(copy.deepcopy(extra))
++    return metadata
++
++
++def _points(points, batch, frame_count, name):
++    value = np.asarray(points)
++    if value.ndim != 3 or value.shape[0] != batch or value.shape[2] != 4:
++        raise ValueError(name + ' must have shape [B,N,4]')
++    if value.dtype.kind not in 'fiu' or not np.isfinite(value).all():
++        raise ValueError(name + ' must contain finite numeric values')
++    frames = value[..., 0]
++    if not np.array_equal(frames, np.rint(frames)):
++        raise ValueError(name + ' frame IDs must be integral')
++    if ((frames < 0) | (frames >= frame_count)).any():
++        raise ValueError(name + ' frame IDs are outside the trajectory')
++    return value
++
++
++def finalize_motion_dict(data, metadata, previous_data=None):
++    """Return a COPY with actual/planned annotations and embedded metadata.
++
++    All dense human/object position, pose and quaternion arrays keep their values,
++    shape and dtype. For multi-step generation, pass the previous complete dict:
++    the legacy executor merges previous *actual* object_point with current plans;
++    this function restores the previous planned prefix before sampling all actuals.
++    Invalid annotation indices fail instead of being clipped or silently rounded.
++    """
++    result = copy.deepcopy(data)
++    if not isinstance(metadata, dict) or metadata.get('schema_version') != SCHEMA_VERSION:
++        raise ValueError('Metadata must use ' + SCHEMA_VERSION)
++    xyz = np.asarray(result['human']['joint_xyz'])
++    if xyz.ndim != 4 or xyz.shape[2:] != (24, 3):
++        raise ValueError('human.joint_xyz must have shape [B,T,24,3]')
++    batch, frame_count = xyz.shape[:2]
++    if not frame_count:
++        raise ValueError('Empty trajectory')
++    for name, fields in result['object'].items():
++        positions = np.asarray(fields['xyz'])
++        if positions.shape != (batch, frame_count, 3) or not np.isfinite(positions).all():
++            raise ValueError('Object positions must match human B/T and be finite')
++        original = _points(fields['object_point'], batch, frame_count, name + '.object_point')
++        if 'planned_object_point' in fields:
++            planned = _points(fields['planned_object_point'], batch, frame_count, name + '.planned_object_point').copy()
++            if planned.shape != original.shape or not np.array_equal(planned[..., 0], original[..., 0]):
++                raise ValueError('Actual/planned object annotations must share frame IDs')
++        else:
++            planned = original.copy()
++            if previous_data is not None and name in previous_data.get('object', {}):
++                prior = previous_data['object'][name]
++                prior_actual = _points(prior['object_point'], batch, frame_count, name + '.previous.object_point')
++                prior_planned = _points(prior.get('planned_object_point', prior_actual), batch, frame_count, name + '.previous.planned_object_point')
++                n = prior_actual.shape[1]
++                if prior_actual.shape != prior_planned.shape or original.shape[1] < n:
++                    raise ValueError('Previous annotation history is inconsistent')
++                if not np.array_equal(prior_actual[..., 0], prior_planned[..., 0]):
++                    raise ValueError('Previous actual/planned annotations have different frame IDs')
++                if not np.array_equal(original[:, :n], prior_actual):
++                    raise ValueError('Merged annotations do not preserve the previous actual prefix')
++                planned[:, :n] = prior_planned
++        frames = original[..., 0].astype(np.int64)
++        actual = original.astype(np.result_type(original.dtype, positions.dtype), copy=True)
++        actual[..., 1:] = positions[np.arange(batch)[:, None], frames]
++        fields['planned_object_point'] = planned
++        fields['object_point'] = actual
++    result['metadata'] = copy.deepcopy(metadata)
++    result['metadata']['batch_size'] = int(batch)
++    result['metadata']['frame_count'] = int(frame_count)
++    return result
++
++
++def terminal_state_orientation(root_quaternions):
++    """Intrinsic XYZ Euler radians from the LAST root quaternion, input wxyz.
++
++    Accept a single [4] quaternion or a trajectory ending in [...,4]. The terminal
++    element is used; writer is single-person, so its [1,T,1,4] shape is supported.
++    """
++    q = np.asarray(root_quaternions)
++    if q.shape[-1:] != (4,) or not q.size or not np.isfinite(q).all():
++        raise ValueError('Finite root quaternions ending in [4] required')
++    q = q.reshape(-1, 4)[-1]
++    if np.linalg.norm(q) == 0:
++        raise ValueError('Zero root quaternion')
++    return Rotation.from_quat(q[[1, 2, 3, 0]]).as_euler('XYZ')
+diff --git a/run_HOI_agent.py b/run_HOI_agent.py
+index cfd52f3..7622d69 100644
+--- a/run_HOI_agent.py
++++ b/run_HOI_agent.py
+@@ -156,7 +156,6 @@ def create_multi_agent(custom_client=None, execute_model=None, max_round=10, llm
+ 
+ used_data = {
+     'sub17_floorlamp_001_pidx_0.json',
+-    'sub16_clothesstand_004_pidx_10.json',
+ }
+ 
+ def run_agent(opt):
+@@ -166,7 +165,7 @@ def run_agent(opt):
+     else:
+         raise Exception
+ 
+-    llm_config = {"model": opt.llm_model_name, "api_key": OPENAI_API_KEY, "cache_seed": None}
++    llm_config = {"model": opt.llm_model_name, "api_key": OPENAI_API_KEY, "base_url": "https://api.openai.com/v1", "cache_seed": None, "max_retries": 0, "timeout": 45, "max_completion_tokens": 1536}
+     max_round = 20
+     user_proxy, manager = create_multi_agent(execute_model=execute_model, max_round=max_round, llm_config=llm_config)
+     
+@@ -202,6 +201,7 @@ def run_agent(opt):
+                 command = f"Pick up {state['objects'][0]['name']}, and put it next to {target_pos[0]}."
+             else:
+                 command = f"Pick up {state['objects'][0]['name']}, and put it next to {target_pos[0]} and {target_pos[1]}."
++        command = state.get('custom_instruction', command)
+         CURRENT_HUMAN_ENVIRONMENT = ""
+         ee_start_pelvis_position = state['human']['pelvis']
+         ee_start_left_hand_position = state['human']['left_hand']

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "sha256": {
+    "runtime/clock_schema.py": "257165b3debb51ce8677560580976981bceca9d114f5d74de482dd9f4b55ff7c",
+    "runtime/run_simulator.sh": "6a62a8e844b87c521b3ef204ee04577ea4d15d29f437af7a7bb09adb3c79bc08",
+    "runtime/sim_convert_bootstrap.py": "a7f02daee9dcd6e7af06026430671db75e825c77a3ad0bdc207402fca26a93d1",
+    "runtime/sim_eval_bootstrap.py": "0962612f98b3f516f8156560d5b489dbac15cc16aa2ea53502bf9e3673b5ef40",
+    "runtime/simulator_process.py": "d3104cde7e21d3c1af1ac6724d6493826a63fbc8aac751cdc0e58b9b95abad7a",
+    "runtime/stage10_simulator_bridge.py": "23adbebcd0d3dc937cd5365984bd9442c1bf1e1b75c53acb0071e31299ead255",
+    "scripts/configure_runtime.py": "1ccf95cb76b3afd767b2a482ba46624c4de59557aee9edf7200fcc20409aa044",
+    "scripts/make_demo_video.py": "da92a7ce244aa9b78a53c36a61a340e19a597aaee7f7914a56858b64971cc36e",
+    "scripts/offline_demo.py": "9dfdf0da9ad4bccb50ce5b8111741ef30c825b9de89de7f0baa7f1faf70bae10",
+    "scripts/prepare_sources.py": "777748636e29c5691c5e6778765f8fa747f8ac42c7117a0a75310d135e2ece9f",
+    "scripts/update_package_manifest.py": "617b5eaa64d2751b1360a738156092f504ba32f2114ce2812a6937011ab37d03",
+    "trial_01/executor_code/protomotios_generate_multi_object.py": "a202839d400eecb767455d59edc886e2e5ee898c1a65f302079f908241d43841",
+    "trial_01/executor_code/waypoint_validation.py": "c5606bc8020baac97d65b2b0d235d638230a27d472b52b83aa690329e74da0da",
+    "trial_01/launch_trial.py": "74f8d1bb98e0692e8fec01c8463972e20a151d154941bbc8e9fe5122323d82a4",
+    "trial_01/launcher/__init__.py": "e2b25be8629900b594d56b83439c5e4fb35aecd9063f9adb4656a22522a15bae",
+    "trial_01/launcher/core.py": "1ff0912a7ce0d1544bc6f1617293bf1f6e555d2d1746cc56ca35830cd061b2f5",
+    "trial_01/launcher/recovery.py": "1e8fc96d88fba4c4caf717c7b8d8397ad324f68849dbe52b772ba496deed9ff1",
+    "trial_01/launcher/runtime.py": "820deaac920463d2705984cfbab6595ccb29afcd2cfdbc5d1fd9fdfea8f42275",
+    "trial_01/launcher/settings.py": "4cfc34b9b952938c7562f610991f7a2008794dd5d94624a5e90bd6a1572aaffb"
+  }
+}
