@@ -1,8 +1,10 @@
 # Publish this prepared repository
 
-Target: **`badriawan/interpose-experiments`**, public visibility. The preparation machine has an isolated local Git repository with `main` and the HTTPS `origin` set. Public GitHub creation/push has not completed: the target was not found, no GitHub CLI/token/helper was available, and browser access was unavailable.
+Published on **2026-11-17**: [badriawan/interpose-experiments](https://github.com/badriawan/interpose-experiments), public visibility, default branch `main`. The initial GitHub README commit was merged into the prepared local history, then pushed without force. The first published package commit was `f8ae53e`; the remote commit and public visibility were verified afterward.
 
-## Finish authentication and repository creation
+## Reusing the publication procedure
+
+The following steps are for a new destination. The repository above already exists and was successfully pushed; routine updates only need the final inspect-and-push step with working Git authentication.
 
 1. Sign in to the intended GitHub account through your normal browser. Create the public repository named `interpose-experiments` at [GitHub's new repository page](https://github.com/new). Leave README, license, and `.gitignore` initialization unchecked; the local repository already contains them.
 2. Authenticate Git on the machine that will push. If you use GitHub CLI, install it through GitHub's official instructions first, then use `gh auth login` and `gh auth setup-git`. The CLI was not installed during package preparation. Alternatively, use your existing Git HTTPS credential helper or SSH setup. Keep authentication local; credentials do not belong in this repository or chat.

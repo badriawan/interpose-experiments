@@ -6,7 +6,7 @@ Date: 2026-11-16. Target: `badriawan/interpose-experiments`, public.
 
 - Local package preparation: **PASS**.
 - Live GPU/API reproduction of the new portable adapter: **NOT RUN**.
-- Public GitHub publication: **BLOCKED** by unavailable authenticated publishing access and absent target repository.
+- Public GitHub publication: **PASS** on 2026-11-17; public `main` verified after push.
 
 ## Completed work
 
@@ -40,8 +40,14 @@ The first remote availability probe, `git ls-remote` against the intended HTTPS 
 
 ## Bottlenecks and rollback
 
-**Observed:** GitHub authentication/repository creation blocks publication. Full GPU/API execution and clean-machine installation remain unverified. **Unresolved:** redistribution terms/credits for the original rendered object assets. No download/build/CPU/GPU throughput bottleneck was measured during packaging; source preparation uses local test fixtures rather than a full remote download.
+**Observed during initial preparation:** GitHub authentication/repository availability blocked publication; this was resolved for the successful push on 2026-11-17. Full GPU/API execution and clean-machine installation remain unverified. **Unresolved:** redistribution terms/credits for the original rendered object assets. No download/build/CPU/GPU throughput bottleneck was measured during packaging; source preparation uses local test fixtures rather than a full remote download.
 
 All changes are confined to this isolated repository. Removing or archiving it reverses the packaging work; ignored private assets/config/cache remain outside any public Git export. No original source/environment/data repair is needed. The source helper operates only when explicitly invoked with `--fetch`; it never resets incompatible existing checkouts.
 
-Next: complete local Git publication prerequisites using `docs/PUBLISHING.md`, push without force, then verify the public README/video and remote commit. Validate the new full research runtime separately before claiming fresh GPU reproduction or policy readiness.
+## Publication follow-up — 2026-11-17
+
+After the destination became accessible, `git fetch origin main` found the GitHub initialization commit `5079f50`, containing only a title-only README. `git merge --allow-unrelated-histories -X ours origin/main` retained that remote history and the full prepared README. The resulting tree was identical to the audited package tree.
+
+`GIT_TERMINAL_PROMPT=0 git push -u origin main` succeeded without force and published merge commit `f8ae53e`. `git ls-remote origin refs/heads/main` matched the local commit. The public GitHub repository API confirmed `private=false` and `default_branch=main`. These documentation updates record the resolved publication status; they do not change runtime code or validation claims.
+
+Next: validate the new full research runtime separately before claiming fresh GPU reproduction or policy readiness. Follow `docs/PUBLISHING.md` for routine reviewed updates.
