@@ -20,6 +20,6 @@ Do not force-push to a repository containing work. If the name is already occupi
 
 ## Release boundary
 
-The intended public content includes source, English documentation, two source patches, license notices, observed environment inventories, tests, and the original synthetic waypoint video/poster. `.local/`, real floorlamp previews, licensed assets, checkpoints, environments and generated runs remain excluded. The original project is unchanged.
+The public content includes source, English documentation, two source patches, license notices, observed environment inventories, tests, the original synthetic waypoint video/poster, and a mesh-free video/poster of the actual saved Trial 01 result. The saved-result media retains its separate SMPL-X Body credit and terms in `media/README.md`. `.local/`, the original mesh-based floorlamp preview, licensed assets, checkpoints, environments and raw generated runs remain excluded. The original project is unchanged.
 
 The local source ZIP is generated from the committed tree under ignored `.local/`. It contains the same public files, including the synthetic video. Importing or uploading that archive does not automatically establish authentication or create a GitHub repository.

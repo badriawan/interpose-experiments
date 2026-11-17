@@ -1,0 +1,33 @@
+{
+  "status": "RENDERED_SAVED_RESULT",
+  "source_file": "sub17_floorlamp_001_pidx_0_task_0.npy",
+  "source_sha256": "3e8d0512cf95360a801855b5ada17c97b6c9f8104cfbdff056ba9f23bae21930",
+  "video": "preview_trial_01.mp4",
+  "poster": "preview_trial_01.png",
+  "frames": 383,
+  "fps": 30.0,
+  "playback_duration_s": 12.766666666666667,
+  "source_span_s": 12.733333333333333,
+  "resolution": [
+    1120,
+    700
+  ],
+  "object_name": "floorlamp",
+  "trajectory_kind": "saved human joint positions and saved interpolated object trajectory",
+  "render_style": "mesh-free skeleton and diamond marker for object center; no invented geometry",
+  "coordinate_frame": "original scene-normalized Z-up; nominal floor z=0",
+  "retiming_applied": false,
+  "new_simulation_run": false,
+  "API_calls": 0,
+  "models_loaded": false,
+  "physical_success_verified": false,
+  "phase_sync_verified": false,
+  "body_credit": "SMPL-X Body: Max Planck Institute for Intelligent Systems",
+  "body_license_url": "https://smpl-x.is.tue.mpg.de/bodylicense.html",
+  "body_media_license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "changes": "Saved joint positions drawn as a skeleton; body/object meshes and scene geometry omitted.",
+  "render_elapsed_s": 10.842,
+  "render_max_rss_mib": 445.914,
+  "source_unchanged": true
+}

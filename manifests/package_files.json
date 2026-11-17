@@ -11,6 +11,7 @@
     "scripts/make_demo_video.py": "da92a7ce244aa9b78a53c36a61a340e19a597aaee7f7914a56858b64971cc36e",
     "scripts/offline_demo.py": "9dfdf0da9ad4bccb50ce5b8111741ef30c825b9de89de7f0baa7f1faf70bae10",
     "scripts/prepare_sources.py": "777748636e29c5691c5e6778765f8fa747f8ac42c7117a0a75310d135e2ece9f",
+    "scripts/render_trial_result.py": "b85df1e15443ecdd47cf548dfb55ec912309b9b77686552f94f05d977f2b4c50",
     "scripts/update_package_manifest.py": "617b5eaa64d2751b1360a738156092f504ba32f2114ce2812a6937011ab37d03",
     "trial_01/executor_code/protomotios_generate_multi_object.py": "a202839d400eecb767455d59edc886e2e5ee898c1a65f302079f908241d43841",
     "trial_01/executor_code/waypoint_validation.py": "c5606bc8020baac97d65b2b0d235d638230a27d472b52b83aa690329e74da0da",
